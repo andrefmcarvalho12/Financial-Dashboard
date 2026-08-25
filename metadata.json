@@ -1,0 +1,6 @@
+{
+  "name": "Portfolio Wealth & Projection Dashboard",
+  "description": "Executive portfolio management dashboard with multi-horizon compound projections, Portugal tax insights, and AI & Tech allocation analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
