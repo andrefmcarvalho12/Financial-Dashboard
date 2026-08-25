@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Printer, 
   Cpu, 
-  Layers
+  Layers,
+  RefreshCw,
+  FolderSync
 } from 'lucide-react';
 import { formatEur } from '../utils/financialCalculations';
+import { DataImporterModal } from './DataImporterModal';
 
 interface Props {
   totalValueEur: number;
@@ -12,6 +15,8 @@ interface Props {
 }
 
 export const Header: React.FC<Props> = ({ totalValueEur, lastUpdated }) => {
+  const [isImporterOpen, setIsImporterOpen] = useState(false);
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -45,7 +50,7 @@ export const Header: React.FC<Props> = ({ totalValueEur, lastUpdated }) => {
           </div>
 
           {/* Quick Stats in Professional Polish Header Style */}
-          <div className="flex items-center gap-6 self-start md:self-auto">
+          <div className="flex items-center gap-4 sm:gap-6 self-start md:self-auto flex-wrap">
             <div className="text-left md:text-right">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Total Portfolio Value</p>
               <p className="text-xl sm:text-2xl font-mono text-emerald-400 font-bold tracking-tight">
@@ -58,15 +63,27 @@ export const Header: React.FC<Props> = ({ totalValueEur, lastUpdated }) => {
                 €2,000.00
               </p>
             </div>
-            <button
-              id="print-dashboard-btn"
-              onClick={handlePrint}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer border border-slate-800"
-              title="Print or Save Report as PDF"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Export / PDF</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                id="open-sync-modal-btn"
+                onClick={() => setIsImporterOpen(true)}
+                className="flex items-center gap-1.5 text-xs font-mono font-semibold px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 rounded-lg transition-colors cursor-pointer border border-emerald-500/30"
+                title="Sync or view the 2 input files"
+              >
+                <FolderSync className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sync 2 Files</span>
+              </button>
+
+              <button
+                id="print-dashboard-btn"
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer border border-slate-800"
+                title="Print or Save Report as PDF"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Export / PDF</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -91,6 +108,13 @@ export const Header: React.FC<Props> = ({ totalValueEur, lastUpdated }) => {
           ))}
         </nav>
       </div>
+
+      {/* Sync 2 Files Modal */}
+      <DataImporterModal
+        isOpen={isImporterOpen}
+        onClose={() => setIsImporterOpen(false)}
+      />
     </header>
   );
 };
+

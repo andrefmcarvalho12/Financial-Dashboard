@@ -1,0 +1,82 @@
+{
+  "totalValueEur": 315991.04,
+  "investmentsTotalEur": 274334.28,
+  "emergencyFundTotalEur": 27264.00,
+  "pprTotalEur": 8800.00,
+  "cashTotalEur": 3326.00,
+  "cryptoTotalEur": 2266.77,
+  "monthlyDepositEur": 2000.00,
+  "defaultAnnualReturnPct": 10.0,
+  "conservativeReturnPct": 5.0,
+  "moderateReturnPct": 7.5,
+  "aggressiveReturnPct": 12.0,
+  "dividendYieldTargetPct": 2.0,
+  "inflationRatePct": 1.5,
+  "targetMilestoneEur": 500000.00,
+  "asOfDate": "2026-08-25",
+  "lastUpdateDate": "2026-08-25 12:19:29",
+  "categories": [
+    {
+      "category": "etfs",
+      "label": "Exchange Traded Funds (ETFs)",
+      "valueEur": 152697.70,
+      "color": "#3b82f6",
+      "subcategories": [
+        { "name": "iShares NASDAQ 100 (CNDX)", "valueEur": 72120.00 },
+        { "name": "iShares Core S&P 500 (CSPX)", "valueEur": 52585.14 },
+        { "name": "iShares Core MSCI World (IWDA)", "valueEur": 14712.28 },
+        { "name": "iShares S&P 500 Info Tech (IUIT)", "valueEur": 13280.28 }
+      ]
+    },
+    {
+      "category": "stocks",
+      "label": "Individual Equities",
+      "valueEur": 104524.00,
+      "color": "#10b981",
+      "subcategories": [
+        { "name": "Interactive Brokers Portfolio", "valueEur": 83323.33 },
+        { "name": "Degiro / XTB Portfolio", "valueEur": 21201.01 }
+      ]
+    },
+    {
+      "category": "emergency",
+      "label": "Emergency Liquidity & Cash Reserves",
+      "valueEur": 27264.00,
+      "color": "#f59e0b",
+      "subcategories": [
+        { "name": "Revolut Savings (2% APY)", "valueEur": 25000.00 },
+        { "name": "Certificados Aforro (Série E)", "valueEur": 2234.00 },
+        { "name": "Fidelidade MySavings", "valueEur": 30.00 }
+      ]
+    },
+    {
+      "category": "ppr",
+      "label": "Plano Poupança Reforma (PPR)",
+      "valueEur": 8800.00,
+      "color": "#8b5cf6",
+      "subcategories": [
+        { "name": "PPR Tax-Advantaged Fund", "valueEur": 8800.00 }
+      ]
+    },
+    {
+      "category": "cash",
+      "label": "Brokerage & Operational Cash",
+      "valueEur": 3326.00,
+      "color": "#64748b",
+      "subcategories": [
+        { "name": "Uninvested Cash & Settlement", "valueEur": 3326.00 }
+      ]
+    },
+    {
+      "category": "crypto",
+      "label": "Cryptocurrency & Digital Assets",
+      "valueEur": 2266.77,
+      "color": "#ec4899",
+      "subcategories": [
+        { "name": "Bitcoin (Staking/Hold)", "valueEur": 1757.59 },
+        { "name": "DeFi Wallet Earn", "valueEur": 466.16 },
+        { "name": "Polkadot (DOT)", "valueEur": 43.01 }
+      ]
+    }
+  ]
+}
