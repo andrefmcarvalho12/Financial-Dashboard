@@ -256,6 +256,118 @@ Where $i$ = Baseline inflation rate (1.5% / yr default).
 ```
 
 ---
+## 🤖 Prompt
+Atua como um analista de dados financeiros. A tua tarefa é usar o interpretador de Python (ferramenta de análise de dados/pandas) para ler, processar e agregar dados de dois ficheiros de folha de cálculo e gerar dois outputs precisos (um JSON e um CSV).
+
+**Atenção aos ficheiros de Input:**
+Vais receber exatamente dois ficheiros com os seguintes nomes:
+```My Finances```
+```Stocks 2026```
+Não inventes nem procures outros nomes de ficheiros. Ambos os ficheiros contêm várias tabs (folhas). Deves usar o código para listar e inspecionar as tabs disponíveis em cada ficheiro (pd.ExcelFile(ficheiro).sheet_names) antes de extrair os dados.
+
+Output 1: portfolio_summary.json
+
+Fontes a utilizar: Dados agregados e macro do ficheiro "My Finances".
+Objetivo: Gerar um sumário macro do portefólio. Calcula os totais e preenche a seguinte estrutura JSON exata. A soma de todos os ativos tem de corresponder a totalValueEur, e a soma da categoria etfs e stocks tem de corresponder a investmentsTotalEur.
+
+Usa esta estrutura exata (preenchendo com os valores extraídos e calculados):
+```
+JSON
+{
+  "totalValueEur": 0.0,
+  "investmentsTotalEur": 0.0,
+  "emergencyFundTotalEur": 0.0,
+  "pprTotalEur": 0.0,
+  "cashTotalEur": 0.0,
+  "cryptoTotalEur": 0.0,
+  "monthlyDepositEur": 0.0,
+  "defaultAnnualReturnPct": 10.0,
+  "conservativeReturnPct": 5.0,
+  "moderateReturnPct": 7.5,
+  "aggressiveReturnPct": 12.0,
+  "dividendYieldTargetPct": 2.0,
+  "inflationRatePct": 1.5,
+  "targetMilestoneEur": 500000.0,
+  "asOfDate": "YYYY-MM-DD",
+  "categories": [
+    {
+      "category": "etfs",
+      "label": "Exchange Traded Funds (ETFs)",
+      "valueEur": 0.0,
+      "color": "#3b82f6",
+      "subcategories": [
+        { "name": "Nome do ETF 1", "valueEur": 0.0 },
+        { "name": "Nome do ETF 2", "valueEur": 0.0 }
+      ]
+    },
+    {
+      "category": "stocks",
+      "label": "Individual Equities",
+      "valueEur": 0.0,
+      "color": "#10b981",
+      "subcategories": [
+        { "name": "Corretora A", "valueEur": 0.0 },
+        { "name": "Corretora B", "valueEur": 0.0 }
+      ]
+    },
+    {
+      "category": "emergency",
+      "label": "Emergency Liquidity & Cash Reserves",
+      "valueEur": 0.0,
+      "color": "#f59e0b",
+      "subcategories": [
+        { "name": "Conta Poupança A", "valueEur": 0.0 },
+        { "name": "Certificados B", "valueEur": 0.0 }
+      ]
+    },
+    {
+      "category": "ppr",
+      "label": "Plano Poupança Reforma (PPR)",
+      "valueEur": 0.0,
+      "color": "#8b5cf6",
+      "subcategories": [
+        { "name": "Nome do Fundo PPR", "valueEur": 0.0 }
+      ]
+    },
+    {
+      "category": "cash",
+      "label": "Brokerage & Operational Cash",
+      "valueEur": 0.0,
+      "color": "#64748b",
+      "subcategories": [
+        { "name": "Uninvested Cash & Settlement", "valueEur": 0.0 }
+      ]
+    },
+    {
+      "category": "crypto",
+      "label": "Cryptocurrency & Digital Assets",
+      "valueEur": 0.0,
+      "color": "#ec4899",
+      "subcategories": [
+        { "name": "Ativo Cripto 1", "valueEur": 0.0 },
+        { "name": "Ativo Cripto 2", "valueEur": 0.0 }
+      ]
+    }
+  ]
+}
+```
+
+Output 2: holdings_export.csv
+
+Fontes a utilizar: Dados detalhados do portefólio de ações e ETFs nas tabs relevantes do ficheiro "Stocks 2026".
+Objetivo: Consolidar os ativos individuais num único formato CSV. O CSV final deve conter o seguinte cabeçalho exato:
+```
+Ticker,Name,AssetClass,Industry,Market,Shares,AvgPrice,CurrentPrice,TotalCostEur,CurrentValueUsd,CurrentValueEur,ProfitEur,ProfitPct,DividendYieldPct,ExpectedReturnPct,Strategy,AiTrendRelevance,Notes
+```
+Exemplo de linha formatada:
+```
+AMS:CNDX,iShares NASDAQ 100 UCITS ETF USD (Acc),ETF,Exchange-traded fund,XETRA / Euronext,50,807.40 €,1 442.40 €,40370.00,84089.76,72120.00,31750.00,78.65,0.0,11.5,Keep,Broad Tech Index,Accumulating ETF (zero dividend tax drag in PT). High beta exposure to top 100 US tech giants.
+```
+Regras de Execução:
+Leitura Rigorosa: Lê os ficheiros e as tabs usando código Python. Não tentes estimar ou inventar dados.
+Consistência Matemática: Garante que o investmentsTotalEur calculado para o JSON bate certo ao cêntimo com a soma da coluna CurrentValueEur gerada no ficheiro holdings_export.csv.
+Exclusão Específica: O utilizador não detém a ação Broadcom (AVGO). Caso apareça em alguma tabela de acompanhamento geral, ignora e garante que não é incluída nos totais do portefólio nem exportada para o CSV.
+Formatação de Output: O teu output final deve ser estritamente o código JSON contido num bloco Markdown json, seguido do código CSV contido num bloco Markdown csv.
 
 ## 🛡️ License
 
