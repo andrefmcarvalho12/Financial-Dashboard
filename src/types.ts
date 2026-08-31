@@ -1,5 +1,24 @@
 export type StrategyAction = 'Buy' | 'Keep' | 'Sell';
 
+// Thematic tags accepted in the AiTrendRelevance column of holdings_*.csv.
+// Both the original vocabulary and the current broker-export vocabulary are
+// supported, so previously generated datasets keep type-checking.
+export type AiTrendRelevance =
+  // Current vocabulary
+  | 'AI Hardware / Semiconductors'
+  | 'AI Software & Platforms'
+  | 'AI Data Centre Infrastructure'
+  | 'AI Energy Demand (power/uranium)'
+  | 'Broad Index (indirect AI exposure)'
+  | 'Broad Tech Index'
+  | 'Non-AI'
+  // Legacy vocabulary
+  | 'Direct Core AI'
+  | 'AI Infrastructure & Semis'
+  | 'Defensive / Cash'
+  | 'Energy / Power Grid'
+  | 'Diversifier';
+
 export interface HoldingItem {
   id: string;
   ticker: string;
@@ -20,7 +39,7 @@ export interface HoldingItem {
   dividendYieldPct: number;
   expectedReturnPct: number;
   notes?: string;
-  aiTrendRelevance?: 'Direct Core AI' | 'AI Infrastructure & Semis' | 'Broad Tech Index' | 'Defensive / Cash' | 'Energy / Power Grid' | 'Diversifier';
+  aiTrendRelevance?: AiTrendRelevance;
 }
 
 export interface AssetCategorySummary {

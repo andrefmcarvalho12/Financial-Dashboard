@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Raw broker exports — kept local, never committed.
+# The generated src/data/portfolioData.ts IS committed so the app builds from a clone.
+inputs/

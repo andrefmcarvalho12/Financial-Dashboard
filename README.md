@@ -43,21 +43,57 @@ The application will start on **`http://localhost:3000`**.
 
 ## 🔄 Two-File Data Generation Workflow
 
-The entire dashboard is powered by **two dedicated input files** located in the `/inputs` directory:
+The entire dashboard is powered by **two input files** located in the `/inputs` directory:
 
 | Input File | Format | Description |
 | :--- | :---: | :--- |
-| **`inputs/portfolio_summary.json`** | `JSON` | Macro assumptions, total account balances, emergency cash, PPR funds, crypto, and monthly contribution targets. |
-| **`inputs/holdings_export.csv`** | `CSV` | Individual broker export with ETF and stock tickers, share counts, cost bases, market values, and sector classifications. |
+| **`inputs/portfolio_*.json`** | `JSON` | Macro assumptions, total account balances, emergency cash, PPR funds, crypto, and monthly contribution targets. |
+| **`inputs/holdings_*.csv`** | `CSV` | Individual broker export with ETF and stock tickers, share counts, cost bases, market values, and sector classifications. |
 
-Whenever you update your broker positions or balances, replace these two files and run the generation script:
+### Automatic file selection
+
+There is no need to rename your broker exports. Drop the new pair into `/inputs` with a date stamp in the filename (`YYMMDD` or `YYYYMMDD`) and run the script \u2014 it always ingests the newest pair:
 
 ```bash
-# Ingest the 2 files and regenerate src/data/portfolioData.ts
+# inputs/
+#   portfolio_260828.json   <- previous export
+#   holdings_260828.csv
+#   portfolio_260925.json   <- new export, selected automatically
+#   holdings_260925.csv
+
 npm run update-data
 ```
 
-You can also run:
+Selection rules, applied to `portfolio*.json` and `holdings*.csv` independently:
+
+1. Files carrying a date stamp in the filename beat files without one.
+2. Among date-stamped files, the **latest date** wins.
+3. Undated files and date ties are ranked by modification time, newest first.
+
+The run prints which files it chose, so a wrong pick is visible immediately.
+
+### Automatic archiving
+
+Once `src/data/portfolioData.ts` has been written successfully, every input superseded by the newest export is moved into **`inputs/Archive/`**. Only the files that produced the current dashboard remain in `/inputs`.
+
+- The `Archive/` folder is created automatically if it does not exist.
+- An archived file is **never overwritten** \u2014 a name collision is stored as `name-1.ext`, `name-2.ext`, and so on.
+- Archiving runs **after** generation, so a malformed export aborts the run with an error and leaves every input file untouched.
+
+Sample run:
+
+```
+🔎 Newest portfolio*.json: portfolio_260925.json (superseding portfolio_260828.json)
+🔎 Newest holdings*.csv: holdings_260925.csv (superseding holdings_260828.csv)
+✅ Loaded summary JSON with target total: €321,450.66
+✅ Parsed 32 holding records from CSV.
+✨ Successfully generated clean TypeScript portfolio data at: src/data/portfolioData.ts
+📊 Total Assets: €321,450.66 across 32 holdings.
+📦 Archived superseded input: portfolio_260828.json → Archive/portfolio_260828.json
+📦 Archived superseded input: holdings_260828.csv → Archive/holdings_260828.csv
+```
+
+You can also run the script directly:
 ```bash
 npx tsx scripts/update_portfolio_data.ts
 ```
@@ -68,7 +104,7 @@ npx tsx scripts/update_portfolio_data.ts
 
 ## 📄 File Formats & Schemas
 
-### 1. `inputs/portfolio_summary.json` (File 1)
+### 1. `inputs/portfolio_*.json` (File 1)
 
 This file defines the high-level macro baseline, cash reserves, and category groupings:
 
@@ -156,7 +192,7 @@ This file defines the high-level macro baseline, cash reserves, and category gro
 
 ---
 
-### 2. `inputs/holdings_export.csv` (File 2)
+### 2. `inputs/holdings_*.csv` (File 2)
 
 This CSV file contains the tabular positions export from your brokers (Interactive Brokers, Degiro, Trading 212, XTB). European and US price/currency notations are automatically parsed:
 
@@ -216,7 +252,7 @@ Where $i$ = Baseline inflation rate (1.5% / yr default).
 | Script | Command | Purpose |
 | :--- | :--- | :--- |
 | **`npm run dev`** | `vite --port=3000 --host=0.0.0.0` | Starts the local dev server on port 3000. |
-| **`npm run update-data`** | `tsx scripts/update_portfolio_data.ts` | Ingests `inputs/*.json` & `inputs/*.csv` and updates TypeScript data. |
+| **`npm run update-data`** | `tsx scripts/update_portfolio_data.ts` | Ingests the **newest** `inputs/portfolio*.json` & `inputs/holdings*.csv`, regenerates the TypeScript data, then archives superseded inputs. |
 | **`npm run build`** | `vite build` | Builds optimized production bundle in `/dist`. |
 | **`npm run preview`** | `vite preview` | Previews production build locally. |
 | **`npm run lint`** | `tsc --noEmit` | Validates TypeScript types. |
@@ -226,9 +262,10 @@ Where $i$ = Baseline inflation rate (1.5% / yr default).
 ## 📁 Project Structure
 
 ```
-├── inputs/                       # 📂 The 2 source data files
-│   ├── portfolio_summary.json    # File 1: Balances, cash, & macro settings
-│   └── holdings_export.csv       # File 2: Detailed stock & ETF positions
+├── inputs/                       # 📂 The 2 source data files (newest pair wins)
+│   ├── Archive/                  # Superseded exports, moved here automatically
+│   ├── portfolio_260828.json     # File 1: Balances, cash, & macro settings
+│   └── holdings_260828.csv       # File 2: Detailed stock & ETF positions
 ├── scripts/
 │   └── update_portfolio_data.ts  # CLI ingestion & code generation script
 ├── src/
@@ -256,118 +293,6 @@ Where $i$ = Baseline inflation rate (1.5% / yr default).
 ```
 
 ---
-## 🤖 Prompt
-Atua como um analista de dados financeiros. A tua tarefa é usar o interpretador de Python (ferramenta de análise de dados/pandas) para ler, processar e agregar dados de dois ficheiros de folha de cálculo e gerar dois outputs precisos (um JSON e um CSV).
-
-**Atenção aos ficheiros de Input:**
-Vais receber exatamente dois ficheiros com os seguintes nomes:
-```My Finances```
-```Stocks 2026```
-Não inventes nem procures outros nomes de ficheiros. Ambos os ficheiros contêm várias tabs (folhas). Deves usar o código para listar e inspecionar as tabs disponíveis em cada ficheiro (pd.ExcelFile(ficheiro).sheet_names) antes de extrair os dados.
-
-Output 1: portfolio_summary.json
-
-Fontes a utilizar: Dados agregados e macro do ficheiro "My Finances".
-Objetivo: Gerar um sumário macro do portefólio. Calcula os totais e preenche a seguinte estrutura JSON exata. A soma de todos os ativos tem de corresponder a totalValueEur, e a soma da categoria etfs e stocks tem de corresponder a investmentsTotalEur.
-
-Usa esta estrutura exata (preenchendo com os valores extraídos e calculados):
-```
-JSON
-{
-  "totalValueEur": 0.0,
-  "investmentsTotalEur": 0.0,
-  "emergencyFundTotalEur": 0.0,
-  "pprTotalEur": 0.0,
-  "cashTotalEur": 0.0,
-  "cryptoTotalEur": 0.0,
-  "monthlyDepositEur": 0.0,
-  "defaultAnnualReturnPct": 10.0,
-  "conservativeReturnPct": 5.0,
-  "moderateReturnPct": 7.5,
-  "aggressiveReturnPct": 12.0,
-  "dividendYieldTargetPct": 2.0,
-  "inflationRatePct": 1.5,
-  "targetMilestoneEur": 500000.0,
-  "asOfDate": "YYYY-MM-DD",
-  "categories": [
-    {
-      "category": "etfs",
-      "label": "Exchange Traded Funds (ETFs)",
-      "valueEur": 0.0,
-      "color": "#3b82f6",
-      "subcategories": [
-        { "name": "Nome do ETF 1", "valueEur": 0.0 },
-        { "name": "Nome do ETF 2", "valueEur": 0.0 }
-      ]
-    },
-    {
-      "category": "stocks",
-      "label": "Individual Equities",
-      "valueEur": 0.0,
-      "color": "#10b981",
-      "subcategories": [
-        { "name": "Corretora A", "valueEur": 0.0 },
-        { "name": "Corretora B", "valueEur": 0.0 }
-      ]
-    },
-    {
-      "category": "emergency",
-      "label": "Emergency Liquidity & Cash Reserves",
-      "valueEur": 0.0,
-      "color": "#f59e0b",
-      "subcategories": [
-        { "name": "Conta Poupança A", "valueEur": 0.0 },
-        { "name": "Certificados B", "valueEur": 0.0 }
-      ]
-    },
-    {
-      "category": "ppr",
-      "label": "Plano Poupança Reforma (PPR)",
-      "valueEur": 0.0,
-      "color": "#8b5cf6",
-      "subcategories": [
-        { "name": "Nome do Fundo PPR", "valueEur": 0.0 }
-      ]
-    },
-    {
-      "category": "cash",
-      "label": "Brokerage & Operational Cash",
-      "valueEur": 0.0,
-      "color": "#64748b",
-      "subcategories": [
-        { "name": "Uninvested Cash & Settlement", "valueEur": 0.0 }
-      ]
-    },
-    {
-      "category": "crypto",
-      "label": "Cryptocurrency & Digital Assets",
-      "valueEur": 0.0,
-      "color": "#ec4899",
-      "subcategories": [
-        { "name": "Ativo Cripto 1", "valueEur": 0.0 },
-        { "name": "Ativo Cripto 2", "valueEur": 0.0 }
-      ]
-    }
-  ]
-}
-```
-
-Output 2: holdings_export.csv
-
-Fontes a utilizar: Dados detalhados do portefólio de ações e ETFs nas tabs relevantes do ficheiro "Stocks 2026".
-Objetivo: Consolidar os ativos individuais num único formato CSV. O CSV final deve conter o seguinte cabeçalho exato:
-```
-Ticker,Name,AssetClass,Industry,Market,Shares,AvgPrice,CurrentPrice,TotalCostEur,CurrentValueUsd,CurrentValueEur,ProfitEur,ProfitPct,DividendYieldPct,ExpectedReturnPct,Strategy,AiTrendRelevance,Notes
-```
-Exemplo de linha formatada:
-```
-AMS:CNDX,iShares NASDAQ 100 UCITS ETF USD (Acc),ETF,Exchange-traded fund,XETRA / Euronext,50,807.40 €,1 442.40 €,40370.00,84089.76,72120.00,31750.00,78.65,0.0,11.5,Keep,Broad Tech Index,Accumulating ETF (zero dividend tax drag in PT). High beta exposure to top 100 US tech giants.
-```
-Regras de Execução:
-Leitura Rigorosa: Lê os ficheiros e as tabs usando código Python. Não tentes estimar ou inventar dados.
-Consistência Matemática: Garante que o investmentsTotalEur calculado para o JSON bate certo ao cêntimo com a soma da coluna CurrentValueEur gerada no ficheiro holdings_export.csv.
-Exclusão Específica: O utilizador não detém a ação Broadcom (AVGO). Caso apareça em alguma tabela de acompanhamento geral, ignora e garante que não é incluída nos totais do portefólio nem exportada para o CSV.
-Formatação de Output: O teu output final deve ser estritamente o código JSON contido num bloco Markdown json, seguido do código CSV contido num bloco Markdown csv.
 
 ## 🛡️ License
 

@@ -303,13 +303,79 @@ export const RECOMMENDATIONS: OptimizationRecommendation[] = [
   console.log(`📊 Total Assets: €${totalPortfolioValueEur.toLocaleString()} across ${processedHoldings.length} holdings.`);
 }
 
+// Pick the most recent input file matching a prefix + extension.
+// Files with a date stamp in the name (portfolio_260828.json, YYMMDD or YYYYMMDD)
+// beat undated ones; ties and undated files are ranked by modification time.
+function findLatestInput(
+  dir: string,
+  prefix: string,
+  extension: string
+): { filePath: string; superseded: string[] } {
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Inputs directory not found at: ${dir}`);
+  }
+
+  const candidates = fs
+    .readdirSync(dir)
+    .filter((f) => {
+      const lower = f.toLowerCase();
+      return lower.startsWith(prefix) && lower.endsWith(extension);
+    })
+    .map((file) => {
+      const match = file.match(/(\d{8}|\d{6})/);
+      const stamp = match ? (match[1].length === 6 ? `20${match[1]}` : match[1]) : '';
+      return { file, stamp, mtimeMs: fs.statSync(path.join(dir, file)).mtimeMs };
+    });
+
+  if (candidates.length === 0) {
+    throw new Error(`No file matching ${prefix}*${extension} found in: ${dir}`);
+  }
+
+  candidates.sort((a, b) => (a.stamp !== b.stamp ? b.stamp.localeCompare(a.stamp) : b.mtimeMs - a.mtimeMs));
+
+  const [winner, ...superseded] = candidates;
+  if (superseded.length > 0) {
+    console.log(`🔎 Newest ${prefix}*${extension}: ${winner.file} (superseding ${superseded.map((c) => c.file).join(', ')})`);
+  }
+  return { filePath: path.join(dir, winner.file), superseded: superseded.map((c) => c.file) };
+}
+
+// Move inputs that a newer export replaced into inputs/Archive/, so only the
+// files that produced the current dashboard are left in inputs/.
+function archiveSupersededInputs(dir: string, files: string[]): void {
+  if (files.length === 0) return;
+
+  const archiveDir = path.join(dir, ARCHIVE_DIR_NAME);
+  fs.mkdirSync(archiveDir, { recursive: true });
+
+  files.forEach((file) => {
+    const extension = path.extname(file);
+    const base = path.basename(file, extension);
+
+    // Never clobber an existing archived file with the same name.
+    let target = path.join(archiveDir, file);
+    let counter = 1;
+    while (fs.existsSync(target)) {
+      target = path.join(archiveDir, `${base}-${counter}${extension}`);
+      counter++;
+    }
+
+    fs.renameSync(path.join(dir, file), target);
+    console.log(`📦 Archived superseded input: ${file} \u2192 ${path.relative(dir, target)}`);
+  });
+}
+
 // CLI Execution
-const defaultSummary = path.join(process.cwd(), 'inputs', 'portfolio_summary.json');
-const defaultHoldings = path.join(process.cwd(), 'inputs', 'holdings_export.csv');
+const ARCHIVE_DIR_NAME = 'Archive';
+const inputsDir = path.join(process.cwd(), 'inputs');
 const defaultOutput = path.join(process.cwd(), 'src', 'data', 'portfolioData.ts');
 
 try {
-  generatePortfolioDataFromFiles(defaultSummary, defaultHoldings, defaultOutput);
+  const summaryInput = findLatestInput(inputsDir, 'portfolio', '.json');
+  const holdingsInput = findLatestInput(inputsDir, 'holdings', '.csv');
+  generatePortfolioDataFromFiles(summaryInput.filePath, holdingsInput.filePath, defaultOutput);
+  // Only archive once the data file has been written successfully.
+  archiveSupersededInputs(inputsDir, [...summaryInput.superseded, ...holdingsInput.superseded]);
 } catch (err) {
   console.error('❌ Error executing portfolio data generator:', err);
   process.exit(1);

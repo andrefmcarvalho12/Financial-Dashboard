@@ -1,5 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { HoldingItem, StrategyAction } from '../types';
+
+// A holding counts as AI-exposed when its thematic tag names AI directly
+// ('AI Hardware / Semiconductors', legacy 'Direct Core AI', ...). Tags such as
+// 'Non-AI' and 'Broad Index (indirect AI exposure)' merely mention AI and are
+// deliberately excluded.
+const isAiRelevant = (holding: HoldingItem): boolean =>
+  holding.aiTrendRelevance === 'Direct Core AI' || !!holding.aiTrendRelevance?.startsWith('AI ');
 import { formatEur, formatPct } from '../utils/financialCalculations';
 import { 
   Search, 
@@ -59,11 +66,7 @@ export const AssetBreakdownTable: React.FC<Props> = ({ holdings, totalPortfolioV
       if (filterTab === 'keep') return item.strategy === 'Keep';
       if (filterTab === 'sell') return item.strategy === 'Sell';
       if (filterTab === 'ai') {
-        return (
-          item.aiTrendRelevance === 'Direct Core AI' ||
-          item.aiTrendRelevance === 'AI Infrastructure & Semis' ||
-          item.industry === 'Semiconductors'
-        );
+        return isAiRelevant(item) || item.industry === 'Semiconductors';
       }
       return true;
     });
@@ -284,7 +287,7 @@ export const AssetBreakdownTable: React.FC<Props> = ({ holdings, totalPortfolioV
                   <td className="py-2.5 px-3.5">
                     <div className="font-bold text-white flex items-center gap-1.5 font-mono">
                       <span>{holding.ticker}</span>
-                      {holding.aiTrendRelevance?.includes('AI') && (
+                      {isAiRelevant(holding) && (
                         <span className="inline-flex items-center px-1 py-0.2 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded text-[9px] font-mono">
                           AI
                         </span>
